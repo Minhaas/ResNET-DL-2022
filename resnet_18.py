@@ -3,7 +3,7 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 from torch.utils.data import DataLoader, random_split
-from torchsummary import summary
+#from torchsummary import summary
 import torch.nn.functional as F
 
 import torchvision
@@ -30,38 +30,35 @@ test_transform_cifar = transforms.Compose([
     transforms.Normalize(*data_statistics, inplace=True)
 ])
 
-dataset = torchvision.datasets.CIFAR10(
-    root="data/", download=True, transform=train_transforms_cifar)
-test_dataset = torchvision.datasets.CIFAR10(
-    root="data/", download=True, train=False, transform=test_transform_cifar)
+dataset = torchvision.datasets.CIFAR10(root="data/", download=True, transform=train_transforms_cifar)
+test_dataset = torchvision.datasets.CIFAR10(root="data/", download=True, train=False, transform=test_transform_cifar)
 
 val_ratio = 0.2
-train_dataset, val_dataset = random_split(
-    dataset, [int((1-val_ratio) * len(dataset)), int(val_ratio * len(dataset))])
+train_dataset, val_dataset = random_split(dataset, [int((1-val_ratio) * len(dataset)), int(val_ratio * len(dataset))])
 batch_size = 64
 train_dl = DataLoader(train_dataset, batch_size, shuffle=True, pin_memory=True)
 val_dl = DataLoader(val_dataset, batch_size, shuffle=True, pin_memory=True)
 test_dl = DataLoader(test_dataset, batch_size, shuffle=True, pin_memory=True)
 
 
-def denormalizer(images, means, std_devs):
-    # (image*st_dev + mean
-    means = torch.tensor(means).reshape(1, 3, 1, 1)
-    std_devs = torch.tensor(std_devs).reshape(1, 3, 1, 1)
-    return images * std_devs + means
-# showing the images
+# def denormalizer(images, means, std_devs):
+#     # (image*st_dev + mean
+#     means = torch.tensor(means).reshape(1, 3, 1, 1)
+#     std_devs = torch.tensor(std_devs).reshape(1, 3, 1, 1)
+#     return images * std_devs + means
+# # showing the images
 
 
-def show_batch(dl):
-    for images, labels in dl:
-        fig, ax = plt.subplots(figsize=(10, 10))
-        images = denormalizer(images, *data_statistics)
-        # ax.imshow(make_grid(images,10).permute(1,2,0))
-        print(labels)
-        break
+# def show_batch(dl):
+#     for images, labels in dl:
+#         fig, ax = plt.subplots(figsize=(10, 10))
+#         images = denormalizer(images, *data_statistics)
+#         # ax.imshow(make_grid(images,10).permute(1,2,0))
+#         print(labels)
+#         break
 
 
-show_batch(train_dl)
+# show_batch(train_dl)
 
 
 def get_default_device():
@@ -220,8 +217,7 @@ def evaluate(model, dl, loss_func):
 
 def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
     optimizer = optim(model.parameters(), max_lr)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(
-        optimizer, max_lr, epochs * len(train_dl))
+    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr, epochs * len(train_dl))
 
     results = []
     for epoch in range(epochs):
@@ -278,4 +274,4 @@ def plot(results, pairs):
 #plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
 test_loss, test_acc = evaluate(model, test_dl, loss_func)
 print(f"Test accuracy is: {test_acc}")
-summary(model, (3,32,32))
+#summary(model, (3,32,32))
