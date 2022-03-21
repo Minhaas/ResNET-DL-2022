@@ -11,12 +11,12 @@ import torch.nn.functional as F
 from collections import OrderedDict
 from cutout import Cutout
 
-data_statistics = ([0.5, 0.5, 0.5],[0.5,0.5,0.5])
+data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
 train_transforms_cifar = transforms.Compose([
     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
     transforms.RandomHorizontalFlip(),
     #transforms.Resize(256),
-    #transforms.CenterCrop(224),
+    transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(*data_statistics, inplace=True),
     Cutout(n_holes=1, length=8)
@@ -32,7 +32,7 @@ test_dataset = torchvision.datasets.CIFAR10(root="data/",download=True, train =F
 
 val_ratio = 0.2 
 train_dataset, val_dataset = random_split(dataset, [int((1-val_ratio)* len(dataset)), int(val_ratio * len(dataset))])
-batch_size = 64
+batch_size = 128
 train_dl = DataLoader(train_dataset, batch_size, shuffle = True, pin_memory = True)
 val_dl = DataLoader(val_dataset, batch_size, shuffle = True, pin_memory = True)
 test_dl = DataLoader(test_dataset, batch_size, shuffle = True, pin_memory = True)
@@ -207,7 +207,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
         print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_loss}, Training loss: {epoch_train_loss}")
     return results
 
-epochs = 10
+epochs = 200
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam
