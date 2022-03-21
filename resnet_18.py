@@ -208,7 +208,7 @@ loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam
 
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
-print(results)
+# print(results)
 
 for result in results:
   print(result['avg_valid_acc'])
@@ -228,4 +228,4 @@ def plot(results, pairs):
 #plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
 
 _,test_acc=evaluate(model,test_dl,loss_func)
-print(test_acc)
+print(f"Test accuracy is {test_acc}")
