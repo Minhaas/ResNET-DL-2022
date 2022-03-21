@@ -150,6 +150,9 @@ def resnet18():
 
 model = resnet18()
 
+def count_parameters(model):
+    return sum(p.numel() for p in model.parameters() if p.requires_grad)
+
 if torch.cuda.is_available():
     model.cuda()
 
@@ -228,4 +231,8 @@ def plot(results, pairs):
 #plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
 
 _,test_acc=evaluate(model,test_dl,loss_func)
-print(f"Test accuracy is {test_acc}")
+params = count_parameters(model)
+print(f"Test accuracy is {test_acc*100}%")
+print(f"Parameters are: {params}")
+
+
