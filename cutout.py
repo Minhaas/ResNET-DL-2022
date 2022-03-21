@@ -1,5 +1,5 @@
-import torch
 import numpy as np
+import torch
 
 
 class Cutout(object):
@@ -20,8 +20,8 @@ class Cutout(object):
         Returns:
             Tensor: Image with n_holes of dimension length x length cut out of it.
         """
-        h = img.size(dim=1)
-        w = img.size(dim=2)
+        h = img.size(1)
+        w = img.size(2)
 
         mask = np.ones((h, w), np.float32)
 
