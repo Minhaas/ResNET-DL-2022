@@ -9,13 +9,15 @@ from torchvision.utils import make_grid
 from torch.utils.data import DataLoader,random_split
 import torch.nn.functional as F
 from collections import OrderedDict
+from cutout import Cutout
 
 data_statistics = ([0.5, 0.5, 0.5],[0.5,0.5,0.5])
 train_transforms_cifar = transforms.Compose([
     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
     transforms.RandomHorizontalFlip(),
-    # transforms.Resize(256),
-    # transforms.CenterCrop(224),
+    transforms.Resize(256),
+    transforms.CenterCrop(224),
+    Cutout(n_holes=2, length=16),
     transforms.ToTensor(),
     transforms.Normalize(*data_statistics, inplace=True),
     # Cutout(n_holes=2, length=16)
