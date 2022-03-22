@@ -232,7 +232,7 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-        fig.savefig(pair+'.jpg')
+            fig.savefig(str(title)+'.jpg')
     
     
 plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
