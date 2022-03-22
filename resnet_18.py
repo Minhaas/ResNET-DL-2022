@@ -211,7 +211,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
 epochs = 20
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam
+optim = torch.optim.Adam(model.parameters())
 optim = Lookahead(optim, la_steps=4, la_alpha=0.8)
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 # print(results)
