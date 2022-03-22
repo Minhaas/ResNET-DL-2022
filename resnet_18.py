@@ -207,7 +207,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
            # print("batch_vld_acc", accuracy(logits, labels))
         epoch_avg_loss, epoch_avg_acc = evaluate(model, val_dl, loss_func)
         results.append({'avg_valid_loss': epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
-        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}, Learning rate{lrs}")
+        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
 
 epochs = 20
@@ -232,14 +232,14 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-        fig.savefig(pairs+'.jpg')
+        fig.savefig(pair+'.jpg')
     
     
 plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
-print(f"Test accuracy is {test_acc*100}%")
+print(f"Test accuracy is {round(test_acc*100,3)} %")
 print(f"Parameters are: {params}")
 
 print("Writing stats to CSV..")
