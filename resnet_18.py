@@ -221,7 +221,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
         print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
 
-epochs = 20
+epochs = 15
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam 
@@ -243,14 +243,14 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-            fig.savefig(str(title)+'.jpg')
+            fig.savefig(str(title)+'.png')
     
     
-plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
+plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates vs batches": ["lrs"]}])
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
-print(f"Test accuracy is {round(test_acc*100,3)} %")
+print(f"Test accuracy is {test_acc*100} %")
 print(f"Parameters are: {params}")
 
 print("Writing stats to CSV..")
