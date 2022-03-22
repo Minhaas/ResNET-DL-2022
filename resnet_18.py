@@ -10,7 +10,8 @@ from torch.utils.data import DataLoader,random_split
 import torch.nn.functional as F
 from collections import OrderedDict
 from cutout import Cutout
-from lookahead import Lookahead
+import csv
+# from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
 train_transforms_cifar = transforms.Compose([
@@ -120,6 +121,7 @@ class ResNet(nn.Module):
         self.layer3 = self._make_layer(block, 256, num_blocks[2], stride=2)
         self.layer4 = self._make_layer(block, 512, num_blocks[3], stride=2)
         self.linear = nn.Linear(512, num_classes)
+        # self.dropout = nn.Dropout(0.25)
   
     def _make_layer(self, block, planes, num_blocks, stride):
         downsample = None
@@ -211,13 +213,15 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
 epochs = 20
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999))
-optim = Lookahead(optim, k=5, alpha=0.5)
+optim = torch.optim.Adam 
+# optim = Lookahead(optim, k=5, alpha=0.5)
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
+
+
 # print(results)
 
-for result in results:
-  print(result['avg_valid_acc'])
+# for result in results:
+#   print(result['avg_valid_acc'])
 
 def plot(results, pairs):
     fig, axes = plt.subplots(len(pairs), figsize = (10,10))
@@ -228,14 +232,19 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-                # fig.savefig(pairs+'.jpg')
+        fig.savefig(pairs+'.jpg')
     
     
-#plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
+plot(results, [{"accuracy vs epochs": ["avg_valid_acc"]}, {"Losses vs epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning rates vs batches": ["lrs"]}])
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
 print(f"Test accuracy is {test_acc*100}%")
 print(f"Parameters are: {params}")
 
-
+print("Writing stats to CSV..")
+with open("stats_adam.csv") as op_file:
+    keys = results[0].keys()
+    fc = csv.DictWriter(op_file, keys)
+    fc.writeheader()
+    fc.writerows(results)
