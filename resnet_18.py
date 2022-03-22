@@ -14,23 +14,34 @@ import csv
 # from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
-train_transforms_cifar = transforms.Compose([
-    transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-    transforms.RandomHorizontalFlip(),
-    #transforms.Resize(256),
-    # transforms.CenterCrop(224),
-    transforms.ToTensor(),
-    transforms.Normalize(*data_statistics, inplace=True),
-    Cutout(n_holes=1, length=8)
-])
+# train_transforms_cifar = transforms.Compose([
+#     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
+#     transforms.RandomHorizontalFlip(),
+#     #transforms.Resize(256),
+#     # transforms.CenterCrop(224),
+#     transforms.ToTensor(),
+#     transforms.Normalize(*data_statistics, inplace=True),
+#     Cutout(n_holes=1, length=8)
+# ])
 
 test_transform_cifar = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(*data_statistics, inplace=True)
 ])
 
-dataset = torchvision.datasets.CIFAR10(root="data/", download=True, transform=train_transforms_cifar)
+init_dataset = torchvision.datasets.CIFAR10(root="data/", download=True)
 test_dataset = torchvision.datasets.CIFAR10(root="data/",download=True, train =False, transform=test_transform_cifar)
+aug_dataset = init_dataset
+aug_dataset.transform= transforms.Compose([
+    transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
+    transforms.RandomHorizontalFlip(),
+    # transforms.Resize(256),
+    # transforms.CenterCrop(224),
+    transforms.ToTensor(),
+    transforms.Normalize(*data_statistics, inplace=True),
+    Cutout(n_holes=1, length=8)
+])
+dataset = torch.utils.data.ConcatDataset([aug_dataset,init_dataset])
 
 val_ratio = 0.2 
 train_dataset, val_dataset = random_split(dataset, [int((1-val_ratio)* len(dataset)), int(val_ratio * len(dataset))])
