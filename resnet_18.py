@@ -33,7 +33,7 @@ test_dataset = torchvision.datasets.CIFAR10(root="data/",download=True, train =F
 
 val_ratio = 0.2 
 train_dataset, val_dataset = random_split(dataset, [int((1-val_ratio)* len(dataset)), int(val_ratio * len(dataset))])
-batch_size = 128
+batch_size = 400
 train_dl = DataLoader(train_dataset, batch_size, shuffle = True, pin_memory = True)
 val_dl = DataLoader(val_dataset, batch_size, shuffle = True, pin_memory = True)
 test_dl = DataLoader(test_dataset, batch_size, shuffle = True, pin_memory = True)
@@ -211,8 +211,8 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
 epochs = 20
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam(model.parameters())
-optim = Lookahead(optim, la_steps=4, la_alpha=0.8)
+optim = torch.optim.Adam(model.parameters(), lr=1e-3, betas=(0.9, 0.999))
+optim = Lookahead(optim, k=5, alpha=0.5)
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 # print(results)
 
