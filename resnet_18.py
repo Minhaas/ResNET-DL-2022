@@ -10,6 +10,7 @@ from torch.utils.data import DataLoader,random_split
 import torch.nn.functional as F
 from collections import OrderedDict
 from cutout import Cutout
+from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
 train_transforms_cifar = transforms.Compose([
@@ -204,14 +205,14 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
            # print("batch_vld_acc", accuracy(logits, labels))
         epoch_avg_loss, epoch_avg_acc = evaluate(model, val_dl, loss_func)
         results.append({'avg_valid_loss': epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
-        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_loss}, Training loss: {epoch_train_loss}")
+        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}, Learning rate{lrs}")
     return results
 
-epochs = 200
+epochs = 20
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam
-
+optim = Lookahead(optim, la_steps=4, la_alpha=0.8)
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 # print(results)
 
