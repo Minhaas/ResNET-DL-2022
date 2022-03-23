@@ -243,7 +243,7 @@ def plot(results, pairs, optim_name):
     
 result_arr = []
 for optim_name in optim_list:
-    optim, name_optim = get_optim()
+    optim, name_optim = get_optim(optim_name)
     results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim, name_optim)
     result_arr.append(results)
     plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates_vs_batches": ["lrs"]}], name_optim)
