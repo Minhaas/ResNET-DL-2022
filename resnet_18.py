@@ -14,15 +14,6 @@ import csv
 # from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
-# train_transforms_cifar = transforms.Compose([
-#     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-#     transforms.RandomHorizontalFlip(),
-#     #transforms.Resize(256),
-#     # transforms.CenterCrop(224),
-#     transforms.ToTensor(),
-#     transforms.Normalize(*data_statistics, inplace=True),
-#     Cutout(n_holes=1, length=8)
-# ])
 
 test_transform_cifar = transforms.Compose([
     transforms.ToTensor(),
@@ -32,11 +23,10 @@ test_transform_cifar = transforms.Compose([
 init_dataset = torchvision.datasets.CIFAR10(root="data/", download=True)
 test_dataset = torchvision.datasets.CIFAR10(root="data/",download=True, train =False, transform=test_transform_cifar)
 aug_dataset = init_dataset
+
 aug_dataset.transform= transforms.Compose([
     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
     transforms.RandomHorizontalFlip(),
-    # transforms.Resize(256),
-    # transforms.CenterCrop(224),
     transforms.ToTensor(),
     transforms.Normalize(*data_statistics, inplace=True),
     Cutout(n_holes=1, length=8)
@@ -45,13 +35,12 @@ dataset = torch.utils.data.ConcatDataset([aug_dataset,init_dataset])
 
 val_ratio = 0.2 
 train_dataset, val_dataset = random_split(dataset, [int((1-val_ratio)* len(dataset)), int(val_ratio * len(dataset))])
-batch_size = 400
+batch_size = 512
 train_dl = DataLoader(train_dataset, batch_size, shuffle = True, pin_memory = True)
 val_dl = DataLoader(val_dataset, batch_size, shuffle = True, pin_memory = True)
 test_dl = DataLoader(test_dataset, batch_size, shuffle = True, pin_memory = True)
 
 def denormalizer(images, means, std_devs):
-    #(image*st_dev + mean
     means = torch.tensor(means).reshape(1,3,1,1)
     std_devs = torch.tensor(std_devs).reshape(1,3,1,1)
     return images * std_devs + means
@@ -60,9 +49,7 @@ def show_batch(dl):
     for images, labels in dl:
         fig, ax = plt.subplots(figsize = (10,10))
         images = denormalizer(images, *data_statistics)
-        # ax.imshow(make_grid(images,10).permute(1,2,0))
         fig.savefig('images.png')
-        # print(labels)
         break
         
 show_batch(train_dl)
@@ -142,7 +129,6 @@ class ResNet(nn.Module):
             layers.append(block(self.in_planes, planes, stride))
             self.in_planes = planes
         return nn.Sequential(*layers)
-    #print("x")
 
 
     def forward(self, x):
@@ -163,6 +149,19 @@ def resnet18():
     return model
 
 model = resnet18()
+optim_list = ["sgd", "adam", "adadelta", "rmsprop"]
+
+def get_optim(optim):
+    if optim == "sgd":
+        optimizer = torch.optim.SGD
+    elif optim == "adam":
+        optimizer = torch.optim.Adam
+    elif optim == "adadelta":
+        optimizer = torch.optim.Adadelta
+    elif optim == "rmsprop":
+        optimizer = torch.optim.RMSprop
+    return optim, optimizer
+
 
 def count_parameters(model):
     return sum(p.numel() for p in model.parameters() if p.requires_grad)
@@ -187,9 +186,12 @@ def evaluate(model, dl, loss_func):
     return epoch_avg_loss, epoch_avg_acc
     
 
-def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
+def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim, optim_name):
     optimizer = optim(model.parameters(), max_lr)
-    scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr, epochs * len(train_dl))
+    if optim_name == "adam":
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr, epochs * len(train_dl))
+    else : 
+        scheduler = torch.optim.lr_scheduler.OneCycleLR(optimizer, max_lr, epochs * len(train_dl), cycle_momentum = False)
     
     results = []
     for epoch in range(epochs):
@@ -217,24 +219,18 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
             batch_accs.append(accuracy(logits, labels))
            # print("batch_vld_acc", accuracy(logits, labels))
         epoch_avg_loss, epoch_avg_acc = evaluate(model, val_dl, loss_func)
-        results.append({'avg_valid_loss': epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
-        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
+        results.append({"avg_valid_loss": epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
+        print(f"Average validation loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
 
-epochs = 15
+epochs = 10
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam 
+# optim = torch.optim.Adam 
 # optim = Lookahead(optim, k=5, alpha=0.5)
-results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 
 
-# print(results)
-
-# for result in results:
-#   print(result['avg_valid_acc'])
-
-def plot(results, pairs):
+def plot(results, pairs, optim_name):
     fig, axes = plt.subplots(len(pairs), figsize = (10,10))
     for i, pair in enumerate(pairs):
         for title, graphs in pair.items():
@@ -243,19 +239,29 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-            fig.savefig(str(title)+'.png')
+            fig.savefig(str(title)+optim_name+'.png')
     
-    
-plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates vs batches": ["lrs"]}])
+result_arr = []
+for optim_name in optim_list:
+    optim, name_optim = get_optim()
+    results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim, name_optim)
+    result_arr.append(results)
+    plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates_vs_batches": ["lrs"]}], name_optim)
+    print("Writing stats to CSV..")
+    with open("stats_"+name_optim+".csv", 'w', newline ='') as op_file:   
+        keys = results[0].keys()
+        fc = csv.DictWriter(op_file, keys)
+        fc.writeheader()
+        fc.writerows(results)
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
 print(f"Test accuracy is {test_acc*100} %")
 print(f"Parameters are: {params}")
 
-print("Writing stats to CSV..")
-with open("stats_adam.csv") as op_file:
-    keys = results[0].keys()
-    fc = csv.DictWriter(op_file, keys)
-    fc.writeheader()
-    fc.writerows(results)
+# print("Writing stats to CSV..")
+# with open("stats_adam.csv", 'w', newline ='') as op_file:
+#     keys = results[0].keys()
+#     fc = csv.DictWriter(op_file, keys)
+#     fc.writeheader()
+#     fc.writerows(results)
