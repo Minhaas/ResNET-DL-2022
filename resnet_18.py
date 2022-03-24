@@ -225,7 +225,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
 epochs = 10
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam 
+optim = torch.optim.Adam(model.paramters()) 
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 
 plt_x = ["Epoch", "Epoch", "Batch size"]
@@ -271,7 +271,7 @@ for epoch in range(epochs):
     test_loss = test_loss/len(test_dl)
     test_loss_history.append(test_loss)
     train_loss_history.append(train_loss)
-    print('Epoch %s, Train loss %s, Test loss %s'%(epoch, train_loss, test_loss))
+    print('Epoch %s, Train loss %s, Test loss %s',(epoch, train_loss, test_loss))
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
