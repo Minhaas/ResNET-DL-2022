@@ -11,7 +11,6 @@ import torch.nn.functional as F
 from collections import OrderedDict
 from cutout import Cutout
 import csv
-# from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
 
@@ -26,7 +25,7 @@ aug_dataset = init_dataset
 
 aug_dataset.transform= transforms.Compose([
     transforms.RandomCrop(32, padding=4, padding_mode='reflect'),
-    transforms.RandomHorizontalFlip(),
+    transforms.RandomHorizontalFlip(p=1),
     transforms.ToTensor(),
     transforms.Normalize(*data_statistics, inplace=True),
     Cutout(n_holes=1, length=8)
@@ -253,11 +252,15 @@ for optim_name in optim_list:
         fc = csv.DictWriter(op_file, keys)
         fc.writeheader()
         fc.writerows(results)
+    _,test_acc=evaluate(model,test_dl,loss_func)
+    params = count_parameters(model)
+    print(f"Test accuracy is {test_acc*100} %")
+    print(f"Parameters are: {params}")
 
-_,test_acc=evaluate(model,test_dl,loss_func)
-params = count_parameters(model)
-print(f"Test accuracy is {test_acc*100} %")
-print(f"Parameters are: {params}")
+# _,test_acc=evaluate(model,test_dl,loss_func)
+# params = count_parameters(model)
+# print(f"Test accuracy is {test_acc*100} %")
+# print(f"Parameters are: {params}")
 
 # print("Writing stats to CSV..")
 # with open("stats_adam.csv", 'w', newline ='') as op_file:
