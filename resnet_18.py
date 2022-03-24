@@ -243,8 +243,8 @@ def plot(results, pairs, optim_name):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
-                axes.set_xlabel(plot_arr_x[plot_count])
-                axes.set_ylabel(plot_arr_y[plot_count])
+                axes[i].set_xlabel(plot_arr_x[plot_count])
+                axes[i].set_ylabel(plot_arr_y[plot_count])
             fig.savefig(train_path+str(title)+optim_name+'.png')
         plot_count += 1
     
