@@ -220,7 +220,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim, optim_name)
             batch_losses.append(loss_func(logits, labels))
             batch_accs.append(accuracy(logits, labels))
            # print("batch_vld_acc", accuracy(logits, labels))
-        epoch_avg_loss, epoch_avg_acc = evaluate(model, val_dl, loss_func)
+        epoch_avg_loss, epoch_avg_acc,_,_ = evaluate(model, val_dl, loss_func)
         results.append({"avg_valid_loss": epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
         print(f"Average validation loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
