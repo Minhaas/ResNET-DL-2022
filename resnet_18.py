@@ -233,9 +233,10 @@ loss_func = nn.functional.cross_entropy
 
 plot_arr_x = ["Accuracy", "Loss", "Learning Rate"]
 plot_arr_y = ["Epochs", "Epochs", "Batch Size"]
-plot_count = 0
+
 def plot(results, pairs, optim_name):
     fig, axes = plt.subplots(len(pairs), figsize = (10,10))
+    plot_count = 0
     for i, pair in enumerate(pairs):
         for title, graphs in pair.items():
             axes[i].se_title = title
