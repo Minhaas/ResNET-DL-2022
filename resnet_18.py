@@ -11,6 +11,7 @@ import torch.nn.functional as F
 from collections import OrderedDict
 from cutout import Cutout
 import csv
+import pandas as pd
 # from lookahead import Lookahead
 
 data_statistics = ([0.4914, 0.4822, 0.4465],[0.2023,0.1994,0.2010])
@@ -218,23 +219,19 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
            # print("batch_vld_acc", accuracy(logits, labels))
         epoch_avg_loss, epoch_avg_acc = evaluate(model, val_dl, loss_func)
         results.append({'avg_valid_loss': epoch_avg_loss, "avg_valid_acc": epoch_avg_acc, "avg_train_loss" : epoch_train_loss, "lrs" : lrs})
-        print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
+        # print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
 
 epochs = 15
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam 
-# optim = Lookahead(optim, k=5, alpha=0.5)
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 
-
-# print(results)
-
-# for result in results:
-#   print(result['avg_valid_acc'])
-
+plt_x = ["Epoch", "Epoch", "Batch size"]
+plt_y = ["Accuracy", "Loss", "Learning rates"]
 def plot(results, pairs):
+    plt_count = 0
     fig, axes = plt.subplots(len(pairs), figsize = (10,10))
     for i, pair in enumerate(pairs):
         for title, graphs in pair.items():
@@ -243,10 +240,38 @@ def plot(results, pairs):
             axes[i]
             for graph in graphs:
                 axes[i].plot([result[graph] for result in results], '-x')
+                axes[i].set_xlabel(plt_x[plt_count])
+                axes[i].set_ylabel(plt_y[plt_count])
             fig.savefig(str(title)+'.png')
+        plt_count +=1 
     
     
-plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates vs batches": ["lrs"]}])
+plot(results, [{"accuracy_vs_epochs": ["avg_valid_acc"]}, {"Losses_vs_epochs" : ["avg_valid_loss", "avg_train_loss"]}, {"learning_rates_vs_batches": ["lrs"]}])
+
+test_loss_history = []
+train_loss_history = []
+for epoch in range(epochs):
+    train_loss = 0.0
+    test_loss = 0.0
+    for i, data in enumerate(train_dl):
+        images, labels = data
+        optim.zero_grad()
+        predicted_output = model(images)
+        fit = loss_func(predicted_output,labels)
+        fit.backward()
+        optim.step()
+        train_loss += fit.item()
+    for i, data in enumerate(test_dl):
+        with torch.no_grad():
+            images, labels = data
+            predicted_output = model(images)
+            fit = loss_func(predicted_output,labels)
+            test_loss += fit.item()
+    train_loss = train_loss/len(train_dl)
+    test_loss = test_loss/len(test_dl)
+    test_loss_history.append(test_loss)
+    train_loss_history.append(train_loss)
+    print('Epoch %s, Train loss %s, Test loss %s'%(epoch, train_loss, test_loss))
 
 _,test_acc=evaluate(model,test_dl,loss_func)
 params = count_parameters(model)
@@ -259,3 +284,9 @@ with open("stats_adam.csv") as op_file:
     fc = csv.DictWriter(op_file, keys)
     fc.writeheader()
     fc.writerows(results)
+
+test_loss_df = pd.DataFrame(test_loss_history)
+test_loss_df.to_csv("test_loss.csv")
+train_loss_df = pd.DataFrame(train_loss_history)
+train_loss_df.to_csv("train_loss.csv")
+
