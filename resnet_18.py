@@ -225,10 +225,10 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
 epochs = 10
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
-optim = torch.optim.Adam(model.paramters()) 
+optim = torch.optim.Adam 
 results = train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim)
 
-plt_x = ["Epoch", "Epoch", "Batch size"]
+plt_x = ["Epoch", "Epoch", "Epoch"]
 plt_y = ["Accuracy", "Loss", "Learning rates"]
 def plot(results, pairs):
     plt_count = 0
@@ -242,6 +242,7 @@ def plot(results, pairs):
                 axes[i].plot([result[graph] for result in results], '-x')
                 axes[i].set_xlabel(plt_x[plt_count])
                 axes[i].set_ylabel(plt_y[plt_count])
+                axes[i].grid()
             fig.savefig(str(title)+'.png')
         plt_count +=1 
     
@@ -254,13 +255,14 @@ for epoch in range(epochs):
     train_loss = 0.0
     test_loss = 0.0
     for i, data in enumerate(train_dl):
-        images, labels = data
-        optim.zero_grad()
-        predicted_output = model(images)
-        fit = loss_func(predicted_output,labels)
-        fit.backward()
-        optim.step()
-        train_loss += fit.item()
+        with torch.no_grad():
+            images, labels = data
+            # optim.zero_grad()
+            predicted_output = model(images)
+            fit = loss_func(predicted_output,labels)
+            fit.backward()
+            optim.step()
+            train_loss += fit.item()
     for i, data in enumerate(test_dl):
         with torch.no_grad():
             images, labels = data
