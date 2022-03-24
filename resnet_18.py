@@ -222,7 +222,7 @@ def train(model, train_dl, val_dl, epochs, max_lr, loss_func, optim):
         # print(f"Average loss: {epoch_avg_loss}, Average accuracy {epoch_avg_acc}, Training loss: {epoch_train_loss}")
     return results
 
-epochs = 15
+epochs = 10
 max_lr = 1e-2
 loss_func = nn.functional.cross_entropy
 optim = torch.optim.Adam 
