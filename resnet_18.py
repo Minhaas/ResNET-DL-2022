@@ -267,12 +267,12 @@ for optim_name in optim_list:
         fc = csv.DictWriter(train_op_file, keys)
         fc.writeheader()
         fc.writerows(results)
-    header_acc = f"accuracy_{name_optim}"
-    header_loss = f"loss_{name_optim}"
+    # header_acc = f"accuracy_{name_optim}"
+    # header_loss = f"loss_{name_optim}"
     test_acc_df = pd.DataFrame(test_acc_result_arr)
-    test_acc_df.columns = header_acc
+    # test_acc_df.columns = header_acc
     test_loss_df = pd.DataFrame(test_loss_result_arr)
-    test_loss_df.columns = header_loss
+    # test_loss_df.columns = header_loss
     test_acc_df.to_csv(test_path+"test_acc_stats_"+name_optim+".csv")
     test_loss_df.to_csv(test_path+"test_loss_stats_"+name_optim+".csv")
     params = count_parameters(model)
