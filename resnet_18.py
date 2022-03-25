@@ -239,7 +239,7 @@ print(f"Test accuracy is {test_acc*100} %")
 print(f"Parameters are: {params}")
 
 print("Writing stats to CSV..")
-with open("stats_adam.csv") as op_file:
+with open("stats_adam.csv", 'w') as op_file:
     keys = results[0].keys()
     fc = csv.DictWriter(op_file, keys)
     fc.writeheader()
