@@ -245,4 +245,8 @@ with open("stats_adam.csv") as op_file:
     fc.writeheader()
     fc.writerows(results)
 
+## save model
+model_path = './project1_model.pt'
+torch.save(model.state_dict(), model_path)
+
 
