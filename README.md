@@ -1,8 +1,4 @@
-[10:16 PM, 3/24/2022] Prithvi: # ResNET-DL-2022
-
-## Title 
- ### ResNET-18 on CIFAR 10 Dataset
-
+# ResNET-18 on CIFAR 10 Dataset
 ## Introduction
 
 Image classification has been a concept of wise research in interest in the field of Computer Science
